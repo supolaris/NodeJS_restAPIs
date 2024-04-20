@@ -1,14 +1,29 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const Product = require('../models/products');
+const products = require('../models/products');
 const route = express.Router();
 
 route.get('/', (req, res, next) => {
     Product.find()
+        .select('name price _id')
         .exec()
-        .then(doc => {
-            console.log(doc);
-            res.status(200).json(doc);
+        .then(docs => {
+            const response = {
+                count: docs.length,
+                products: docs.map(doc => {
+                    return {
+                        name: doc.name,
+                        price: doc.price,
+                        _id: doc.id,
+                        request: {
+                            type: 'GET',
+                            url: 'http://localhost:3000/products/' + doc.id
+                        }
+                    }
+                })
+            }
+            res.status(200).json(response);
         })
         .catch(err => {
             console.log(err);
@@ -30,7 +45,15 @@ route.post('/', (req, res, next) => {
             console.log(result);
             res.status(201).json({
                 message: 'Post response',
-                details: result,
+                createdProduct: {
+                    name: result.name,
+                    price: result.price,
+                    _id: result.id,
+                    request: {
+                        type: 'GET',
+                        url: 'http://localhost:3000/products/' + result.id
+                    }
+                },
             });
         })
         .catch(err => {
@@ -64,38 +87,38 @@ route.get('/:productId', (req, res, next) => {
 
 route.delete("/:productId", (req, res, next) => {
     const id = req.params.productId;
-    Product.deleteOne({_id: id})
-    .exec()
-    .then(doc => {
-        console.log(doc);
-        res.status(200).json(doc);
-    })
-    .catch(err => {
-        console.log(err);
-        res.status(500).json({
-            error: err
+    Product.deleteOne({ _id: id })
+        .exec()
+        .then(doc => {
+            console.log(doc);
+            res.status(200).json(doc);
+        })
+        .catch(err => {
+            console.log(err);
+            res.status(500).json({
+                error: err
+            });
         });
-    });
 });
 
 route.patch('/:productId', (req, res, next) => {
     const id = req.params.productId;
     const updateOps = {};
-    for (const ops of req.body){
+    for (const ops of req.body) {
         updateOps[ops.propName] = ops.value;
     }
     Product.updateOne({ _id: id }, { $set: updateOps })
-    .exec()
-    .then(result => {
-        console.log(result);
-        res.status(200).json(result);
-    })
-    .catch(err => {
-        console.log(err);
-        res.status(500).json({
-            error: err
+        .exec()
+        .then(result => {
+            console.log(result);
+            res.status(200).json(result);
+        })
+        .catch(err => {
+            console.log(err);
+            res.status(500).json({
+                error: err
+            });
         });
-    });
 });
 
 module.exports = route;
