@@ -71,7 +71,13 @@ route.get('/:productId', (req, res, next) => {
         .then(doc => {
             console.log(doc);
             if (doc) {
-                res.status(200).json(doc);
+                res.status(200).json({
+                    product: doc,
+                    request: {
+                        type: 'GET',
+                        url: 'http://localhost:3000/products/'
+                    }
+                });
             }
             else {
                 res.status(500).json({
@@ -91,7 +97,17 @@ route.delete("/:productId", (req, res, next) => {
         .exec()
         .then(doc => {
             console.log(doc);
-            res.status(200).json(doc);
+            res.status(200).json({
+                message: 'Product Deleted',
+                request: {
+                    type: 'POST',
+                    url: 'http://localhost:3000/products/',
+                    body: {
+                        name: 'String',
+                        price: 'Number'
+                    }
+                }
+            });
         })
         .catch(err => {
             console.log(err);
@@ -111,7 +127,13 @@ route.patch('/:productId', (req, res, next) => {
         .exec()
         .then(result => {
             console.log(result);
-            res.status(200).json(result);
+            res.status(200).json({
+                message: 'Product updates',
+                result: {
+                    type: 'GET',
+                    url: 'http://localhost:3000/products/' + id
+                }
+            });
         })
         .catch(err => {
             console.log(err);
